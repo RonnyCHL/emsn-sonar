@@ -1,0 +1,19 @@
+# BatDetect2 en dependencies
+batdetect2
+torch
+torchaudio
+
+# Audio opname
+sounddevice
+soundfile
+numpy
+
+# Database
+psycopg2-binary
+
+# MQTT
+paho-mqtt
+
+# Utilities
+pyyaml
+requests
