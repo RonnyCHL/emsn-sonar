@@ -4,32 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}EMSN Bats{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F987;</text></svg>">
     {% block head %}{% endblock %}
 </head>
 <body>
-    <header class="header">
-        <h1><span class="bat-icon">&#x1F987;</span> EMSN Bats</h1>
-        <div class="station-name">emsn-bats &mdash; Vleermuismonitoring Nijverdal</div>
-    </header>
-
-    <nav>
-        <a href="/" class="{% if request.path == '/' %}active{% endif %}">Overzicht</a>
-        <a href="/detections" class="{% if request.path == '/detections' %}active{% endif %}">Detecties</a>
-        <a href="/spectrogram" class="{% if request.path == '/spectrogram' %}active{% endif %}">Spectrogram</a>
-        <a href="/species" class="{% if request.path == '/species' %}active{% endif %}">Soorten</a>
-        <a href="/recordings" class="{% if request.path == '/recordings' %}active{% endif %}">Opnames</a>
-        <a href="/settings" class="{% if request.path == '/settings' %}active{% endif %}">Instellingen</a>
+    <nav class="nav">
+        <div class="nav-inner">
+            <a href="/" class="nav-brand">
+                <span class="brand-mark">🦇</span>
+                <span class="brand-text">
+                    <span class="brand-name">EMSN Bats</span>
+                    <span class="brand-sub">Nijverdal · Vleermuismonitoring</span>
+                </span>
+            </a>
+            <div class="nav-links">
+                <a href="/" class="nav-link {% if request.path == '/' %}is-active{% endif %}">Overzicht</a>
+                <a href="/detections" class="nav-link {% if request.path == '/detections' %}is-active{% endif %}">Detecties</a>
+                <a href="/species" class="nav-link {% if request.path == '/species' %}is-active{% endif %}">Soorten</a>
+                <a href="/recordings" class="nav-link {% if request.path == '/recordings' %}is-active{% endif %}">Opnames</a>
+                <a href="/spectrogram" class="nav-link {% if request.path == '/spectrogram' %}is-active{% endif %}">Spectrogram</a>
+                <a href="/settings" class="nav-link {% if request.path == '/settings' %}is-active{% endif %}">Instellingen</a>
+            </div>
+        </div>
     </nav>
 
-    <div class="container">
+    <main class="main">
         {% block content %}{% endblock %}
-    </div>
+    </main>
 
     <footer class="footer">
-        EMSN Bats &mdash; BatDetect2 + Dodotronic Ultramic 200kHz<br>
-        {{ now.strftime('%Y-%m-%d %H:%M:%S') }}
+        <div class="footer-inner">
+            <div>
+                <span class="footer-title">EMSN Bats</span>
+                <span class="footer-sub">Dual detection: BatDetect2 · BattyBirdNET-Bavaria</span>
+            </div>
+            <div class="footer-meta">
+                <span>Dodotronic Ultramic 200kHz</span>
+                <span class="footer-dot">·</span>
+                <span>{{ now.strftime('%Y-%m-%d %H:%M') }}</span>
+            </div>
+        </div>
     </footer>
 
     <div id="toast" class="toast"></div>
@@ -38,12 +58,9 @@
         function showToast(message, duration = 3000) {
             const toast = document.getElementById('toast');
             toast.textContent = message;
-            toast.style.display = 'block';
-            setTimeout(() => {
-                toast.style.display = 'none';
-            }, duration);
+            toast.classList.add('is-visible');
+            setTimeout(() => toast.classList.remove('is-visible'), duration);
         }
-
         {% if request.path in ['/', '/detections', '/spectrogram'] %}
         setTimeout(() => { location.reload(); }, 30000);
         {% endif %}

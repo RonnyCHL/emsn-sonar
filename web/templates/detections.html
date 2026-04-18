@@ -1,57 +1,69 @@
 {% extends "base.html" %}
-{% block title %}EMSN Bats - Detecties{% endblock %}
+{% block title %}EMSN Bats — Detecties{% endblock %}
 
 {% block content %}
-<div class="section-header">
-    Detecties vandaag - {{ total }} totaal
-</div>
 
-{% for det in detections %}
-<div class="detection-card">
-    <div class="detection-time">{{ det.detection_time[11:19] }}</div>
-    <div class="detection-info">
-        <div class="species-name">{{ det.species_dutch or det.species|dutch_name }}</div>
-        <div class="species-latin">{{ det.species }}</div>
+<section class="hero" style="padding: var(--space-8) 0;">
+    <div class="hero-eyebrow">
+        <span class="hero-dot"></span>
+        <span>{{ total }} detecties vandaag</span>
     </div>
-    <div class="detection-confidence">
-        <span class="confidence-badge
-            {% if det.confidence >= 0.7 %}confidence-high
-            {% elif det.confidence >= 0.4 %}confidence-medium
-            {% else %}confidence-low{% endif %}">
-            {{ (det.confidence * 100)|int }}%
-        </span>
-        <div class="frequency-info">
-            {{ (det.frequency_low / 1000)|round(1) }}-{{ (det.frequency_high / 1000)|round(1) }} kHz
-            | {{ det.duration_ms|round(1) }}ms
+    <h1 class="hero-headline" style="font-size: clamp(2rem, 5vw, 3.5rem);">
+        Alle <span class="accent">detecties</span>
+    </h1>
+    <p class="hero-subtitle">Pagina {{ page }} van {{ ((total / per_page)|round(0, 'ceil'))|int if total else 1 }} · Sorteer op tijd (nieuwste bovenaan)</p>
+</section>
+
+<section class="section">
+    {% if detections %}
+        <div>
+            {% for det in detections %}
+            <div class="detection-card">
+                <div class="detection-time">{{ det.detection_time[11:19] }}</div>
+                <div>
+                    <div class="species-name">{{ det.species_dutch or det.species|dutch_name }}</div>
+                    <div class="species-latin">{{ det.species }}</div>
+                </div>
+                <div class="frequency-info">
+                    {% if det.frequency_low and det.frequency_high %}
+                    {{ (det.frequency_low / 1000)|round(1) }}–{{ (det.frequency_high / 1000)|round(1) }} kHz
+                    {% endif %}
+                    {% if det.duration_ms %} · {{ det.duration_ms|round(1) }}ms{% endif %}
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="confidence-badge {% if det.confidence >= 0.7 %}confidence-high{% elif det.confidence >= 0.4 %}confidence-medium{% else %}confidence-low{% endif %}">
+                        {{ (det.confidence * 100)|int }}%
+                    </span>
+                    {% if det.spectrogram_path %}
+                    <a href="/spectrograms/{{ det.spectrogram_path.split('/spectrograms/')[-1] }}"
+                       target="_blank" class="btn btn-secondary" style="padding: var(--space-2) var(--space-3); font-size: 0.8rem;">📊</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
         </div>
-    </div>
-    {% if det.spectrogram_path %}
-    <div style="margin-left: 10px;">
-        <a href="/spectrograms/{{ det.spectrogram_path.split('/spectrograms/')[-1] }}"
-           target="_blank" title="Bekijk spectrogram">&#x1F4CA;</a>
-    </div>
-    {% endif %}
-</div>
-{% endfor %}
 
-{% if not detections %}
-<div class="section-header">
-    Nog geen detecties vandaag.
-</div>
-{% endif %}
+        {% if total > per_page %}
+        <div class="pagination">
+            {% if page > 1 %}
+                <a href="?page={{ page - 1 }}" class="pagination-btn">← Vorige</a>
+            {% endif %}
+            <span class="pagination-btn is-active">{{ page }} / {{ ((total / per_page)|round(0, 'ceil'))|int }}</span>
+            {% if page * per_page < total %}
+                <a href="?page={{ page + 1 }}" class="pagination-btn">Volgende →</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">🔍</div>
+            <h3 class="empty-state-title">Nog geen detecties vandaag</h3>
+            <p class="empty-state-text">
+                De detectie pipeline draait — zodra er vleermuizen actief worden,
+                verschijnen ze hier automatisch.
+            </p>
+        </div>
+    {% endif %}
+</section>
 
-<!-- Paginering -->
-{% if total > per_page %}
-<div style="text-align: center; margin-top: 20px;">
-    {% if page > 1 %}
-    <a href="?page={{ page - 1 }}" class="btn">&laquo; Vorige</a>
-    {% endif %}
-    <span style="margin: 0 15px; color: var(--text-secondary);">
-        Pagina {{ page }} van {{ (total / per_page)|round(0, 'ceil')|int }}
-    </span>
-    {% if page * per_page < total %}
-    <a href="?page={{ page + 1 }}" class="btn">Volgende &raquo;</a>
-    {% endif %}
-</div>
-{% endif %}
 {% endblock %}

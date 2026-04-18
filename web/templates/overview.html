@@ -1,147 +1,199 @@
 {% extends "base.html" %}
-{% block title %}EMSN Bats - Overzicht{% endblock %}
+{% block title %}EMSN Bats — Vleermuismonitoring Nijverdal{% endblock %}
 
 {% block content %}
-<!-- Statistieken -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="value">{{ stats.total }}</div>
-        <div class="label">Totaal</div>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="hero-eyebrow">
+        <span class="hero-dot"></span>
+        <span>Live · {{ now.strftime('%H:%M') }}</span>
     </div>
-    <div class="stat-card">
-        <div class="value">{{ stats.today }}</div>
-        <div class="label">Vandaag</div>
+    <h1 class="hero-headline">
+        {{ stats.today }}<span class="accent"> vleermuizen</span><br>
+        vandaag gedetecteerd
+    </h1>
+    <p class="hero-subtitle">
+        Akoestische monitoring in Nijverdal met dual-detector pipeline.
+        BatDetect2 neural network en BattyBirdNET-Bavaria model analyseren
+        elke opname onafhankelijk voor maximale betrouwbaarheid.
+    </p>
+
+    <div class="hero-stats">
+        <div class="hero-stat">
+            <div class="hero-stat-value is-orange">{{ stats.last_hour }}</div>
+            <div class="hero-stat-label">Laatste uur</div>
+        </div>
+        <div class="hero-stat">
+            <div class="hero-stat-value">{{ stats.species_today }}</div>
+            <div class="hero-stat-label">Soorten vandaag</div>
+        </div>
+        <div class="hero-stat">
+            <div class="hero-stat-value">{{ stats.total }}</div>
+            <div class="hero-stat-label">Totaal</div>
+        </div>
+        <div class="hero-stat">
+            <div class="hero-stat-value">{{ stats.total_species }}</div>
+            <div class="hero-stat-label">Unieke soorten</div>
+        </div>
     </div>
-    <div class="stat-card">
-        <div class="value">{{ stats.last_hour }}</div>
-        <div class="label">Laatste uur</div>
-    </div>
-    <div class="stat-card">
-        <div class="value">{{ stats.species_today }}</div>
-        <div class="label">Soorten vandaag</div>
-    </div>
-    <div class="stat-card">
-        <div class="value">{{ stats.total_species }}</div>
-        <div class="label">Totaal soorten</div>
-    </div>
-</div>
+</section>
 
 <!-- Nieuwe soorten vandaag -->
 {% if new_species %}
-<div class="section-header new">
-    &#x2728; {{ new_species|length }} nieuwe soort{{ 'en' if new_species|length > 1 }} vandaag gedetecteerd!
-</div>
-{% for sp in new_species %}
-<div class="detection-card">
-    <div class="detection-info">
-        <div class="species-name">{{ sp.species_dutch or sp.species|dutch_name }}</div>
-        <div class="species-latin">{{ sp.species }}</div>
+<section class="section">
+    <div class="section-header">
+        <div>
+            <h2 class="section-title">Nieuwe soort{{ 'en' if new_species|length > 1 }} vandaag</h2>
+            <div class="section-sub">Eerste detectie ooit — {{ new_species|length }} dit seizoen</div>
+        </div>
+        <span class="section-badge">✨ NIEUW</span>
     </div>
-    <div class="detection-confidence">
-        <span class="confidence-badge confidence-high">{{ (sp.max_confidence * 100)|int }}%</span>
-        <div class="frequency-info">Eerste: {{ sp.first_detection[11:19] }}</div>
+    <div class="card-grid">
+        {% for sp in new_species %}
+        <div class="card card-highlight">
+            <div class="species-name" style="font-size: 1.15rem; margin-bottom: 4px;">
+                {{ sp.species_dutch or sp.species|dutch_name }}
+            </div>
+            <div class="species-latin" style="margin-bottom: var(--space-4);">{{ sp.species }}</div>
+            <div class="flex items-center gap-4">
+                <span class="confidence-badge confidence-high">{{ (sp.max_confidence * 100)|int }}%</span>
+                <span class="font-mono text-muted" style="font-size: 0.82rem;">
+                    Eerste: {{ sp.first_detection[11:19] if sp.first_detection else '—' }}
+                </span>
+            </div>
+        </div>
+        {% endfor %}
     </div>
-</div>
-{% endfor %}
+</section>
 {% endif %}
 
 <!-- Zeldzame soorten vandaag -->
 {% if rare_species %}
-<div class="section-header rare">
-    &#x26A0;&#xFE0F; {{ rare_species|length }} zeldzame soort{{ 'en' if rare_species|length > 1 }} vandaag gedetecteerd!
-</div>
-{% for sp in rare_species %}
-<div class="detection-card">
-    <div class="detection-info">
-        <div class="species-name">{{ sp.species_dutch or sp.species|dutch_name }}</div>
-        <div class="species-latin">{{ sp.species }}</div>
+<section class="section">
+    <div class="section-header">
+        <div>
+            <h2 class="section-title">Zeldzame soorten vandaag</h2>
+            <div class="section-sub">{{ rare_species|length }} ongewone observatie{{ 's' if rare_species|length > 1 }}</div>
+        </div>
+        <span class="section-badge" style="background: var(--warning-subtle); color: var(--warning);">⚠ ZELDZAAM</span>
     </div>
-    <div class="detection-confidence">
-        <span class="confidence-badge confidence-medium">{{ (sp.max_confidence * 100)|int }}%</span>
-    </div>
-</div>
-{% endfor %}
-{% endif %}
-
-<!-- Detecties per uur -->
-{% if hourly %}
-<div class="section-header">Detecties per uur - {{ now.strftime('%Y-%m-%d') }}</div>
-<div class="hourly-chart">
-    {% set max_count = hourly|map(attribute='count')|max if hourly else 1 %}
-    {% for h in range(24) %}
-        {% set count = 0 %}
-        {% for item in hourly if item.hour == h %}
-            {% set count = item.count %}
+    <div class="card-grid">
+        {% for sp in rare_species %}
+        <div class="card">
+            <div class="species-name" style="font-size: 1.1rem;">{{ sp.species_dutch or sp.species|dutch_name }}</div>
+            <div class="species-latin" style="margin-bottom: var(--space-4);">{{ sp.species }}</div>
+            <span class="confidence-badge confidence-medium">{{ (sp.max_confidence * 100)|int }}%</span>
+        </div>
         {% endfor %}
-        <div class="hourly-bar" style="height: {{ (count / max_count * 100) if max_count > 0 else 0 }}%"
-             title="{{ h }}:00 - {{ count }} detecties">
-            {% if count > 0 %}
-            <span class="bar-count">{{ count }}</span>
-            {% endif %}
-            <span class="bar-label">{{ h }}</span>
-        </div>
-    {% endfor %}
-</div>
+    </div>
+</section>
 {% endif %}
 
-<!-- Soorten vandaag (heatmap-stijl) -->
+<!-- Activity per uur -->
+{% if hourly %}
+<section class="section">
+    <div class="section-header">
+        <div>
+            <h2 class="section-title">Activiteit vandaag</h2>
+            <div class="section-sub">Detecties per uur · {{ now.strftime('%-d %B %Y') }}</div>
+        </div>
+    </div>
+    <div class="hourly-chart-wrap">
+        <div class="hourly-chart">
+            {% set max_count = (hourly|map(attribute='count')|max) if hourly else 1 %}
+            {% for h in range(24) %}
+                {% set count = 0 %}
+                {% for item in hourly if item.hour == h %}
+                    {% set count = item.count %}
+                {% endfor %}
+                <div class="hourly-bar {{ 'is-empty' if count == 0 }}"
+                     style="height: {{ (count / max_count * 100) if (max_count or 0) > 0 else 0 }}%"
+                     title="{{ '%02d:00'|format(h) }} — {{ count }} detecties">
+                    {% if count > 0 %}<span class="hourly-bar-count">{{ count }}</span>{% endif %}
+                    <span class="hourly-bar-label">{{ '%02d'|format(h) }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Soorten vandaag -->
 {% if species_today %}
-<div class="section-header">
-    Alle {{ species_today|length }} soorten - Laatste update: {{ now.strftime('%Y-%m-%d %H:%M') }}
-</div>
-{% set max_species_count = species_today|map(attribute='count')|max if species_today else 1 %}
-{% for sp in species_today %}
-<div class="detection-card">
-    <div class="detection-info" style="flex: 2;">
-        <div class="species-name">{{ sp.species_dutch or sp.species|dutch_name }}</div>
-    </div>
-    <div style="flex: 3; display: flex; align-items: center;">
-        <div style="background: var(--accent); height: 20px; border-radius: 3px;
-                    width: {{ (sp.count / max_species_count * 100)|int }}%;
-                    min-width: 20px; display: flex; align-items: center; padding: 0 8px;">
-            <span style="font-size: 0.85em; font-weight: bold;">{{ sp.count }}</span>
+<section class="section">
+    <div class="section-header">
+        <div>
+            <h2 class="section-title">Alle soorten vandaag</h2>
+            <div class="section-sub">{{ species_today|length }} verschillende soorten gedetecteerd</div>
         </div>
+        <a href="/species" class="btn btn-secondary">Alle soorten →</a>
     </div>
-    <div class="detection-confidence">
-        <span class="confidence-badge
-            {% if sp.max_confidence >= 0.7 %}confidence-high
-            {% elif sp.max_confidence >= 0.4 %}confidence-medium
-            {% else %}confidence-low{% endif %}">
-            {{ (sp.max_confidence * 100)|int }}%
-        </span>
+    <div class="species-list">
+        {% set max_species_count = species_today|map(attribute='count')|max if species_today else 1 %}
+        {% for sp in species_today %}
+        <div class="species-row">
+            <div>
+                <div class="species-name">{{ sp.species_dutch or sp.species|dutch_name }}</div>
+                <div class="species-latin">{{ sp.species }}</div>
+            </div>
+            <div class="species-bar-track">
+                <div class="species-bar-fill" style="width: {{ ((sp.count / max_species_count * 100)|int) if max_species_count > 0 else 0 }}%;">
+                    {{ sp.count }}
+                </div>
+            </div>
+            <span class="confidence-badge {% if sp.max_confidence >= 0.7 %}confidence-high{% elif sp.max_confidence >= 0.4 %}confidence-medium{% else %}confidence-low{% endif %}">
+                {{ (sp.max_confidence * 100)|int }}%
+            </span>
+        </div>
+        {% endfor %}
     </div>
-</div>
-{% endfor %}
+</section>
 {% endif %}
 
-<!-- Laatste detecties -->
+<!-- Recente detecties -->
 {% if recent %}
-<div class="section-header">Laatste detecties</div>
-{% for det in recent %}
-<div class="detection-card">
-    <div class="detection-time">{{ det.detection_time[11:19] }}</div>
-    <div class="detection-info">
-        <div class="species-name">{{ det.species_dutch or det.species|dutch_name }}</div>
-        <div class="species-latin">{{ det.species }}</div>
-    </div>
-    <div class="detection-confidence">
-        <span class="confidence-badge
-            {% if det.confidence >= 0.7 %}confidence-high
-            {% elif det.confidence >= 0.4 %}confidence-medium
-            {% else %}confidence-low{% endif %}">
-            {{ (det.confidence * 100)|int }}%
-        </span>
-        <div class="frequency-info">
-            {{ (det.frequency_low / 1000)|round(1) }}-{{ (det.frequency_high / 1000)|round(1) }} kHz
+<section class="section">
+    <div class="section-header">
+        <div>
+            <h2 class="section-title">Laatste detecties</h2>
+            <div class="section-sub">Live feed · Auto-refresh elke 30 seconden</div>
         </div>
+        <a href="/detections" class="btn btn-secondary">Alle detecties →</a>
     </div>
-</div>
-{% endfor %}
+    <div>
+        {% for det in recent %}
+        <div class="detection-card">
+            <div class="detection-time">{{ det.detection_time[11:19] }}</div>
+            <div>
+                <div class="species-name">{{ det.species_dutch or det.species|dutch_name }}</div>
+                <div class="species-latin">{{ det.species }}</div>
+            </div>
+            <div class="frequency-info">
+                {% if det.frequency_low and det.frequency_high %}
+                {{ (det.frequency_low / 1000)|round(1) }}–{{ (det.frequency_high / 1000)|round(1) }} kHz
+                {% endif %}
+            </div>
+            <span class="confidence-badge {% if det.confidence >= 0.7 %}confidence-high{% elif det.confidence >= 0.4 %}confidence-medium{% else %}confidence-low{% endif %}">
+                {{ (det.confidence * 100)|int }}%
+            </span>
+        </div>
+        {% endfor %}
+    </div>
+</section>
 {% endif %}
 
 {% if not species_today and not recent %}
-<div class="section-header">
-    Nog geen detecties vandaag. Vleermuizen zijn nachtdieren - wacht tot schemering!
-</div>
+<section class="section">
+    <div class="empty-state">
+        <div class="empty-state-icon">🌙</div>
+        <h3 class="empty-state-title">Wachten op vleermuizen</h3>
+        <p class="empty-state-text">
+            Vleermuizen zijn nachtdieren. De detectie-pipeline staat stand-by en
+            wordt actief bij schemering. Kom terug na zonsondergang voor de eerste observaties.
+        </p>
+    </div>
+</section>
 {% endif %}
+
 {% endblock %}

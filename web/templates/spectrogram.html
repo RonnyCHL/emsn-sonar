@@ -1,57 +1,88 @@
 {% extends "base.html" %}
-{% block title %}EMSN Bats - Spectrogram{% endblock %}
+{% block title %}EMSN Bats — Spectrogram{% endblock %}
 
 {% block content %}
-{% if detection %}
-<div class="section-header">
-    Laatste detectie: {{ detection.detection_time }}
-</div>
 
-<div class="detection-card" style="justify-content: center; flex-direction: column; padding: 20px;">
-    <div style="text-align: center; margin-bottom: 15px;">
-        <div class="species-name" style="font-size: 1.5em;">
-            {{ detection.species_dutch or detection.species|dutch_name }}
-        </div>
-        <div class="species-latin" style="color: var(--accent-light); font-style: italic;">
-            {{ detection.species }}
-        </div>
-        <div style="margin-top: 8px;">
-            <span class="confidence-badge
-                {% if detection.confidence >= 0.7 %}confidence-high
-                {% elif detection.confidence >= 0.4 %}confidence-medium
-                {% else %}confidence-low{% endif %}">
-                Confidence: {{ (detection.confidence * 100)|int }}%
-            </span>
-        </div>
-        <div class="frequency-info" style="margin-top: 5px;">
-            {{ (detection.frequency_low / 1000)|round(1) }} - {{ (detection.frequency_high / 1000)|round(1) }} kHz
-            | Duur: {{ detection.duration_ms|round(1) }}ms
-        </div>
+<section class="hero" style="padding: var(--space-8) 0;">
+    <div class="hero-eyebrow">
+        <span class="hero-dot"></span>
+        <span>Laatste detectie</span>
     </div>
-</div>
+    {% if detection %}
+        <h1 class="hero-headline" style="font-size: clamp(2rem, 5vw, 3.5rem);">
+            <span class="accent">{{ detection.species_dutch or detection.species|dutch_name }}</span>
+        </h1>
+        <p class="hero-subtitle" style="font-style: italic;">{{ detection.species }} · {{ detection.detection_time }}</p>
+    {% else %}
+        <h1 class="hero-headline" style="font-size: clamp(2rem, 5vw, 3.5rem);">
+            <span class="accent">Spectrogram</span>
+        </h1>
+        <p class="hero-subtitle">Visualisatie van echolocatie patronen</p>
+    {% endif %}
+</section>
+
+{% if detection %}
+
+<section class="section">
+    <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));">
+        <div class="hero-stat">
+            <div class="hero-stat-value is-orange">{{ (detection.confidence * 100)|int }}<span style="font-size: 1.2rem;">%</span></div>
+            <div class="hero-stat-label">Confidence</div>
+        </div>
+        {% if detection.frequency_low and detection.frequency_high %}
+        <div class="hero-stat">
+            <div class="hero-stat-value">{{ (detection.frequency_low / 1000)|round(0)|int }}<span style="font-size: 1.2rem;">–{{ (detection.frequency_high / 1000)|round(0)|int }}</span></div>
+            <div class="hero-stat-label">Frequentie (kHz)</div>
+        </div>
+        {% endif %}
+        {% if detection.duration_ms %}
+        <div class="hero-stat">
+            <div class="hero-stat-value">{{ detection.duration_ms|round(1) }}<span style="font-size: 1.2rem;">ms</span></div>
+            <div class="hero-stat-label">Duur</div>
+        </div>
+        {% endif %}
+    </div>
+</section>
 
 {% if detection.spectrogram_path %}
-<div class="spectrogram-container">
-    <img src="/spectrograms/{{ detection.spectrogram_path.split('/spectrograms/')[-1] }}"
-         alt="Spectrogram {{ detection.species }}">
-</div>
+<section class="section">
+    <div class="card" style="padding: var(--space-4);">
+        <img src="/spectrograms/{{ detection.spectrogram_path.split('/spectrograms/')[-1] }}"
+             alt="Spectrogram {{ detection.species }}"
+             style="width: 100%; display: block; border-radius: var(--r-md);">
+    </div>
+</section>
 {% endif %}
 
 {% if detection.audio_path %}
-<div style="text-align: center; margin-top: 15px;">
-    <h3 style="color: var(--accent-light); margin-bottom: 10px;">Hoorbare versie (10x vertraagd)</h3>
-    <audio controls style="width: 80%;">
-        <source src="/api/audible/{{ detection.id }}" type="audio/wav">
-    </audio>
-    <div class="frequency-info" style="margin-top: 5px;">
-        Ultrasone echolocatie omgezet naar hoorbaar bereik (50 kHz -> 5 kHz)
+<section class="section">
+    <div class="section-header">
+        <div>
+            <h2 class="section-title">Hoorbare versie</h2>
+            <div class="section-sub">Ultrasoon omgezet naar hoorbaar — 10× vertraagd</div>
+        </div>
     </div>
-</div>
+    <div class="card">
+        <audio controls style="width: 100%; filter: invert(0.85) hue-rotate(20deg);">
+            <source src="/api/audible/{{ detection.id }}" type="audio/wav">
+        </audio>
+        <div class="text-muted" style="margin-top: var(--space-3); font-size: 0.85rem;">
+            Echolocatie boven het menselijk gehoor (~50 kHz) is door time-stretching in het hoorbare bereik gebracht (~5 kHz).
+        </div>
+    </div>
+</section>
 {% endif %}
 
 {% else %}
-<div class="section-header">
-    Nog geen detecties. Wacht op de eerste vleermuis!
-</div>
+
+<section class="section">
+    <div class="empty-state">
+        <div class="empty-state-icon">📊</div>
+        <h3 class="empty-state-title">Nog geen detecties</h3>
+        <p class="empty-state-text">Zodra de eerste vleermuis is gedetecteerd verschijnt het spectrogram hier.</p>
+    </div>
+</section>
+
 {% endif %}
+
 {% endblock %}

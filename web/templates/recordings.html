@@ -1,43 +1,85 @@
 {% extends "base.html" %}
-{% block title %}EMSN Bats - Opnames{% endblock %}
+{% block title %}EMSN Bats — Opnames{% endblock %}
 
 {% block content %}
-<div class="section-header">
-    Opnames
-</div>
 
-<div style="display: flex; gap: 20px;">
-    <!-- Datum selectie -->
-    <div style="min-width: 200px;">
-        <h3 style="color: var(--accent-light); margin-bottom: 10px;">Datums</h3>
-        {% for date in dates %}
-        <a href="?date={{ date }}" class="detection-card"
-           style="text-decoration: none; display: block;
-                  {% if date == selected_date %}border-color: var(--accent);{% endif %}">
-            {{ date }}
-        </a>
-        {% endfor %}
-        {% if not dates %}
-        <div style="color: var(--text-secondary);">Nog geen opnames</div>
-        {% endif %}
+<section class="hero" style="padding: var(--space-8) 0;">
+    <div class="hero-eyebrow">
+        <span class="hero-dot"></span>
+        <span>Audio archief</span>
     </div>
+    <h1 class="hero-headline" style="font-size: clamp(2rem, 5vw, 3.5rem);">
+        <span class="accent">Opnames</span>
+    </h1>
+    <p class="hero-subtitle">Browse alle ultrasone WAV opnames · 200 kHz · 5 sec per bestand</p>
+</section>
 
-    <!-- Bestanden -->
-    <div style="flex: 1;">
-        {% if selected_date %}
-        <h3 style="color: var(--accent-light); margin-bottom: 10px;">
-            {{ selected_date }} - {{ files|length }} bestanden
-        </h3>
-        {% for file in files %}
-        <div class="recording-item">
-            <span style="margin-right: 15px;">{{ file[4:19].replace('_', ' ') }}</span>
-            <a href="/recordings/{{ selected_date }}/{{ file }}">{{ file }}</a>
+<section class="section">
+    <div style="display: grid; grid-template-columns: 240px 1fr; gap: var(--space-6);" class="recordings-grid">
+        <aside>
+            <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: var(--space-4);">Datums</h3>
+            {% if dates %}
+                <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+                    {% for date in dates %}
+                    <a href="?date={{ date }}"
+                       class="pagination-btn {% if date == selected_date %}is-active{% endif %}"
+                       style="text-align: left; display: block;">
+                        {{ date }}
+                    </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-muted">Nog geen opnames</div>
+            {% endif %}
+        </aside>
+
+        <div>
+            {% if selected_date %}
+                <div class="section-header">
+                    <div>
+                        <h3 class="section-title" style="font-size: 1.4rem;">{{ selected_date }}</h3>
+                        <div class="section-sub">{{ files|length }} bestand{{ 'en' if files|length != 1 }}</div>
+                    </div>
+                </div>
+                {% if files %}
+                    <div class="table-wrap">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Tijd</th>
+                                    <th>Bestand</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for file in files %}
+                                <tr>
+                                    <td class="font-mono">{{ file[4:19].replace('_', ' ') }}</td>
+                                    <td class="font-mono text-muted">{{ file }}</td>
+                                    <td>
+                                        <a href="/recordings/{{ selected_date }}/{{ file }}" class="btn btn-secondary" style="padding: var(--space-2) var(--space-3); font-size: 0.8rem;">Download</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔇</div>
+                        <h3 class="empty-state-title">Geen opnames op deze datum</h3>
+                        <p class="empty-state-text">Kies een andere datum uit de lijst.</p>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">📁</div>
+                    <h3 class="empty-state-title">Archief nog leeg</h3>
+                    <p class="empty-state-text">Opnames verschijnen hier zodra de detectie pipeline actief wordt.</p>
+                </div>
+            {% endif %}
         </div>
-        {% endfor %}
-        {% if not files %}
-        <div style="color: var(--text-secondary);">Geen opnames op deze datum</div>
-        {% endif %}
-        {% endif %}
     </div>
-</div>
+</section>
+
 {% endblock %}

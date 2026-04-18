@@ -1,59 +1,66 @@
 {% extends "base.html" %}
-{% block title %}EMSN Bats - Soorten{% endblock %}
+{% block title %}EMSN Bats — Soorten{% endblock %}
 
 {% block content %}
-<div class="section-header">
-    Soorten Statistieken - {{ species_list|length }} soorten gedetecteerd
-</div>
 
-<table class="species-table">
-    <thead>
-        <tr>
-            <th>Soort</th>
-            <th>Wetenschappelijk</th>
-            <th>Detecties</th>
-            <th>Max Conf.</th>
-            <th>Actieve dagen</th>
-            <th>Eerste</th>
-            <th>Laatste</th>
-            <th>Zeldzaamheid</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for sp in species_list %}
-        <tr>
-            <td><strong>{{ sp.species_dutch or sp.species|dutch_name }}</strong></td>
-            <td style="font-style: italic; color: var(--accent-light);">{{ sp.species }}</td>
-            <td>{{ sp.total }}</td>
-            <td>
-                <span class="confidence-badge
-                    {% if sp.max_confidence >= 0.7 %}confidence-high
-                    {% elif sp.max_confidence >= 0.4 %}confidence-medium
-                    {% else %}confidence-low{% endif %}">
-                    {{ (sp.max_confidence * 100)|int }}%
-                </span>
-            </td>
-            <td>{{ sp.active_days }}</td>
-            <td>{{ sp.first_seen[:10] }}</td>
-            <td>{{ sp.last_seen|timeago }}</td>
-            <td>
-                <span class="rarity-badge rarity-{{ sp.rarity }}">
-                    {% if sp.rarity == 1 %}Algemeen
-                    {% elif sp.rarity == 2 %}Vrij algemeen
-                    {% elif sp.rarity == 3 %}Ongewoon
-                    {% elif sp.rarity == 4 %}Zeldzaam
-                    {% elif sp.rarity == 5 %}Zeer zeldzaam
-                    {% endif %}
-                </span>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<section class="hero" style="padding: var(--space-8) 0;">
+    <div class="hero-eyebrow">
+        <span class="hero-dot"></span>
+        <span>{{ species_list|length }} unieke soorten</span>
+    </div>
+    <h1 class="hero-headline" style="font-size: clamp(2rem, 5vw, 3.5rem);">
+        <span class="accent">Soorten</span> overzicht
+    </h1>
+    <p class="hero-subtitle">Levenslange catalogus · Alle unieke vleermuissoorten ooit gedetecteerd door deze station</p>
+</section>
 
-{% if not species_list %}
-<div style="text-align: center; padding: 40px; color: var(--text-secondary);">
-    Nog geen soorten gedetecteerd. De eerste detectie komt eraan!
-</div>
-{% endif %}
+<section class="section">
+    {% if species_list %}
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Soort</th>
+                        <th>Wetenschappelijk</th>
+                        <th>Detecties</th>
+                        <th>Max conf.</th>
+                        <th>Actieve dagen</th>
+                        <th>Eerste</th>
+                        <th>Laatste</th>
+                        <th>Zeldzaamheid</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sp in species_list %}
+                    <tr>
+                        <td><strong>{{ sp.species_dutch or sp.species|dutch_name }}</strong></td>
+                        <td><em class="text-muted">{{ sp.species }}</em></td>
+                        <td class="font-mono"><strong>{{ sp.total }}</strong></td>
+                        <td>
+                            <span class="confidence-badge {% if sp.max_confidence >= 0.7 %}confidence-high{% elif sp.max_confidence >= 0.4 %}confidence-medium{% else %}confidence-low{% endif %}">
+                                {{ (sp.max_confidence * 100)|int }}%
+                            </span>
+                        </td>
+                        <td class="font-mono">{{ sp.active_days }}</td>
+                        <td class="font-mono text-muted">{{ sp.first_seen[:10] }}</td>
+                        <td class="text-muted">{{ sp.last_seen|timeago }}</td>
+                        <td>
+                            {% set labels = {1: ('Algemeen', 'confidence-high'), 2: ('Vrij algemeen', 'confidence-high'), 3: ('Ongewoon', 'confidence-medium'), 4: ('Zeldzaam', 'confidence-medium'), 5: ('Zeer zeldzaam', 'confidence-low')} %}
+                            {% set label, cls = labels.get(sp.rarity, ('Onbekend', 'confidence-low')) %}
+                            <span class="confidence-badge {{ cls }}">{{ label }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">🦇</div>
+            <h3 class="empty-state-title">Nog geen soorten</h3>
+            <p class="empty-state-text">De catalogus vult zich vanzelf naarmate de station detecties vangt.</p>
+        </div>
+    {% endif %}
+</section>
+
 {% endblock %}
