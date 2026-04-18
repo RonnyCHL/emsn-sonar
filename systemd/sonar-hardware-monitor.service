@@ -1,0 +1,24 @@
+[Unit]
+Description=EMSN Sonar Hardware Monitor - Schrijft metrics naar PostgreSQL system_health
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ronny
+WorkingDirectory=/home/ronny/emsn-sonar
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/home/ronny/emsn-sonar/venv/bin/python3 -m scripts.monitoring.hardware_monitor
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sonar-hardware-monitor
+
+TimeoutStartSec=30
+MemoryMax=128M
+Nice=15
+IOSchedulingClass=best-effort
+IOSchedulingPriority=6
+
+[Install]
+WantedBy=multi-user.target

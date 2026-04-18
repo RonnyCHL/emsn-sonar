@@ -1,0 +1,13 @@
+[Unit]
+Description=EMSN Sonar Hardware Monitor Timer - Elke minuut
+After=network-online.target
+Wants=network-online.target
+
+[Timer]
+OnCalendar=*:*:00
+OnBootSec=1min
+AccuracySec=10s
+Persistent=true
+
+[Install]
+WantedBy=timers.target
