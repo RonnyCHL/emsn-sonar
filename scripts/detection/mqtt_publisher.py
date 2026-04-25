@@ -83,7 +83,9 @@ def _on_disconnect(_client_, _userdata, _flags, reason_code, _properties):
     _connected = False
     _connected_event.clear()
     # rc=0 = wij hebben zelf disconnect() gecalled (clean shutdown).
-    if int(reason_code) != 0:
+    # Paho v2 levert een ReasonCode object zonder __int__ - vergelijk via .value.
+    rc_value = getattr(reason_code, "value", reason_code)
+    if rc_value != 0:
         logger.warning("MQTT verbinding verbroken (rc=%s), paho herverbindt", reason_code)
 
 
