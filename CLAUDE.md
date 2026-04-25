@@ -86,11 +86,22 @@ paho's interne `reconnect_delay_set()`. Plus FD self-check in
 `sonar_monitor.py` die het proces afbreekt bij ≥80% van rlimit zodat
 systemd herstart i.p.v. stilletjes door te modderen.
 
-### BattyBirdNET-Bavaria analyzer (open, upstream)
-`bat_ident.py --area Bavaria` faalt op alle WAVs met
-`ValueError: Tensor data is null. Run allocate_tensors() first` in
-`ai-edge-litert` 2.1.4. Bekend probleem met TFLite singleton
-INTERPRETER + custom classifier. Sinds 18 april 2026 geen enkele
-Bavaria detectie verwerkt. Fix vereist upgrade/patch van
-BattyBirdNET-Analyzer (third-party), buiten scope van emsn-sonar zelf.
-Workaround: BatDetect2 doet primaire detectie en werkt prima.
+### BattyBirdNET-Bavaria analyzer (opgelost 2026-04-25)
+`bat_ident.py --area Bavaria` faalde op alle WAVs met
+`ValueError: Tensor data is null. Run allocate_tensors() first`. Root
+cause: BattyBirdNET-Analyzer haalt in zijn embeddings flow een
+intermediate tensor op via `OUTPUT_LAYER_INDEX - 1`
+(`GLOBAL_AVG_POOL/Mean`). De nieuwe `ai-edge-litert` 2.x runtime
+blokkeert `get_tensor()` op intermediate tensors tenzij de
+Interpreter expliciet met `experimental_preserve_all_tensors=True`
+geïnitialiseerd wordt.
+
+Fix: `scripts/bavaria/patch_battybirdnet_litert.py` (idempotent)
+patcht `~/BattyBirdNET-Analyzer/model.py` zodat `loadModel(False)`
+de juiste flag zet. Bij verse install van BattyBirdNET-Analyzer:
+draai dit script eenmalig.
+
+Daarnaast was `MIN_CONFIDENCE = 0.5` in `bavaria_watcher.py` te
+hoog voor onze 200 kHz USB-mic opnames; verlaagd naar 0.05 (zelfs
+duidelijke Nyctalus calls scoren ~0.04 op het Bavaria model met
+deze opname-setup).

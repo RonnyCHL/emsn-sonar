@@ -55,7 +55,11 @@ SPECTROGRAMS_DIR = Path(
 ) / "bavaria"
 
 POLL_INTERVAL_SEC = 30
-MIN_CONFIDENCE = 0.5
+# Bavaria-classifier scoort op onze 200kHz USB-mic opnames een stuk lager
+# dan zijn typische test-set. Empirisch (test 2026-04-25) komt zelfs een
+# duidelijke Nyctalus leisleri call uit op ~0.04. 0.5 is dus onbruikbaar
+# en verklaarde "0 detecties" naast het ai-edge-litert defect.
+MIN_CONFIDENCE = 0.05
 AREA = "Bavaria"
 THREADS = 2
 
