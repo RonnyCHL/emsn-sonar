@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import logging
 import sqlite3
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
