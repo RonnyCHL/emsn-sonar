@@ -22,7 +22,7 @@ mkdir -p "$NAS_BASE"
 
 log "Start rsync backup naar $NAS_BASE"
 
-rsync -aAX --delete --info=stats1 \
+rsync -rltD --no-perms --no-owner --no-group --delete --info=stats1 \
     --exclude='/dev/*' \
     --exclude='/proc/*' \
     --exclude='/sys/*' \
@@ -41,5 +41,7 @@ rsync -aAX --delete --info=stats1 \
     --exclude='*/__pycache__' \
     --exclude='*.pyc' \
     / "$NAS_BASE/" 2>&1 | tee -a "$LOG_FILE"
+
+chown ronny:ronny "$LOG_FILE" 2>/dev/null || true
 
 log "Backup voltooid"
